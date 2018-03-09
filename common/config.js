@@ -10,6 +10,6 @@ module.exports = {
   },{
     name: 'statistics'
   },{
-    name: 'export-data1'
+    name: 'export-data'
   }]
 }
