@@ -143,6 +143,7 @@ class interfaceController extends baseController {
    * @param {String} [req_body_other]  非form类型的请求参数可保存到此字段
    * @param {String}  [res_body_type] 相应信息的数据格式，有["json", "text", "xml"]三种
    * @param {String} [res_body] 响应信息，可填写任意字符串，如果res_body_type是json,则会调用mock功能
+   * @param {String} [res_body_template] mock模板，可填写任意字符串，如果res_body_type是json,则会调用mock功能
    * @param  {String} [desc] 接口描述
    * @returns {Object}
    * @example ./api/interface/add.json
@@ -242,6 +243,7 @@ class interfaceController extends baseController {
    * @param {String} [req_body_other]  非form类型的请求参数可保存到此字段
    * @param {String}  [res_body_type] 相应信息的数据格式，有["json", "text", "xml"]三种
    * @param {String} [res_body] 响应信息，可填写任意字符串，如果res_body_type是json,则会调用mock功能
+   * @param {String} [res_body_template] mock模板，可填写任意字符串，如果res_body_type是json,则会调用mock功能
    * @param  {String} [desc] 接口描述
    * @returns {Object}
    */
@@ -482,6 +484,7 @@ class interfaceController extends baseController {
    * @param {String} [req_body_other]  非form类型的请求参数可保存到此字段
    * @param {String}  [res_body_type] 相应信息的数据格式，有["json", "text", "xml"]三种
    * @param {String} [res_body] 响应信息，可填写任意字符串，如果res_body_type是json,则会调用mock功能
+   * @param {String} [res_body_template] mock模板，可填写任意字符串，如果res_body_type是json,则会调用mock功能
    * @param  {String} [desc] 接口描述
    * @returns {Object}
    * @example ./api/interface/up.json
