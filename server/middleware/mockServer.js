@@ -220,13 +220,13 @@ module.exports = async (ctx, next) => {
           const schema = yapi.commons.json_parse(interfaceData.res_body);
           res = yapi.commons.schemaToJson(schema);
         } else {
+          // console.log("interfaceData", interfaceData)
           res = mockExtra(yapi.commons.json_parse(interfaceData.res_body_template), {
             query: ctx.request.query,
             body: ctx.request.body,
             params: Object.assign({}, ctx.request.query, ctx.request.body)
           });
         }
-
         try {
           res = Mock.mock(res);
         } catch (e) {

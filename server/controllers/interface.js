@@ -83,6 +83,7 @@ class interfaceController extends baseController {
       'req_body_other': 'string',
       res_body_type: 'string',
       res_body: 'string',
+      res_body_template:'string',
       custom_field_value: 'string',
       'api_opened': 'boolean',
       'req_body_is_json_schema': 'string',
@@ -492,7 +493,7 @@ class interfaceController extends baseController {
 
   async up(ctx) {
     let params = ctx.params;
-
+    // console.log(params);
     if (!_.isUndefined(params.method)) {
       params.method = params.method || 'GET';
       params.method = params.method.toUpperCase();
