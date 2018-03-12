@@ -9,7 +9,7 @@ import json5 from "json5";
 import { message, Tabs, Affix } from "antd";
 import EasyDragSort from "../../../../components/EasyDragSort/EasyDragSort.js";
 import mockEditor from "client/components/AceEditor/mockEditor";
-import axios from 'axios'
+// import axios from 'axios'
 
 require('codemirror/lib/codemirror.css') // codemirror
 require('tui-editor/dist/tui-editor.css'); // editor ui
@@ -232,6 +232,15 @@ class InterfaceEditForm extends Component {
             } catch (e) {
               values.res_body = this.state.res_body;
             }
+            try {
+              values.res_body_template = JSON.stringify(
+                JSON.parse(this.state.res_body_template),
+                null,
+                "   "
+              );
+            } catch (e) {
+              values.res_body_template = this.state.res_body_template;
+            }            
           }
           if (values.req_body_type === "json") {
             if (
@@ -354,6 +363,7 @@ class InterfaceEditForm extends Component {
   };
 
   componentDidMount() {
+    // console.log(this.props.form.getFieldValue("res_body_is_json_schema"))
     EditFormContext = this;
     this.setState({
       req_radio_type: HTTP_METHOD[this.state.method].request_body
@@ -381,6 +391,18 @@ class InterfaceEditForm extends Component {
       onChange: function(d) {
         that.setState({
           res_body: d.text
+        });
+        EditFormContext.props.changeEditStatus(initResBody !== d.text);
+      },
+      fullScreen: true
+    });
+
+    this.mockEditor = mockEditor({
+      container: "mock_json",
+      data: that.state.res_body_template,
+      onChange: function(d) {
+        that.setState({
+          res_body_template: d.text
         });
         EditFormContext.props.changeEditStatus(initResBody !== d.text);
       },
@@ -424,22 +446,25 @@ class InterfaceEditForm extends Component {
 
   handleMockPreview = async () => {
     let str = "";
-    
     try {
-      if(this.props.form.getFieldValue('res_body_is_json_schema')){
-        let schema = json5.parse(this.props.form.getFieldValue('res_body'))
-        let result = await axios.post('/api/interface/schema2json', {
-          schema: schema
-        })
-        return this.mockPreview.setValue(JSON.stringify(result.data));
-      }
-      if (this.resBodyEditor.curData.format === true) {
-        str = JSON.stringify(this.resBodyEditor.curData.mockData(), null, "  ");
+      // if(this.props.form.getFieldValue('res_body_is_json_schema')){
+      //   let schema = json5.parse(this.props.form.getFieldValue('res_body'))
+      //   let result = await axios.post('/api/interface/schema2json', {
+      //     schema: schema
+      //   })
+      //   return this.mockPreview.setValue(JSON.stringify(result.data));
+      // }
+      if (this.mockEditor.curData.format === true) {
+        str = JSON.stringify(this.mockEditor.curData.mockData(), null, "  ");        
       } else {
-        str = "解析出错: " + this.resBodyEditor.curData.format;
+        if(this.state.res_body_template) {        
+          str = "解析出错: " + this.mockEditor.curData.format;
+        }
       }
     } catch (err) {
-      str = "解析出错: " + err.message;
+      if(this.state.res_body_template) {    
+        str = "解析出错: " + err.message;
+      }
     }
     this.mockPreview.setValue(str);
   };
@@ -1065,8 +1090,15 @@ class InterfaceEditForm extends Component {
                 defaultActiveKey="tpl"
                 onChange={this.handleJsonType}
               >
-                <TabPane tab="模板" key="tpl" />
-                <TabPane tab="预览" key="preview" />
+                {getFieldDecorator("res_body_is_json_schema", {
+                  valuePropName: "checked",
+                  initialValue: this.state.res_body_is_json_schema
+                })}              
+                <TabPane tab="schema" key="tpl" />
+                {!this.props.form.getFieldValue("res_body_is_json_schema") ?
+                <TabPane tab="mock" key="mock"/> : "" }                
+               {!this.props.form.getFieldValue("res_body_is_json_schema") ?
+                <TabPane tab="mock预览" key="preview" /> : "" }
               </Tabs>
               
               <div style={{marginTop: '10px'}}>
@@ -1078,7 +1110,7 @@ class InterfaceEditForm extends Component {
 
                 <div style={{ padding: "10px 0", fontSize: "15px" }}>
                   {!this.props.form.getFieldValue("res_body_is_json_schema") ?
-                    <span>基于 mockjs 和 json5,使用注释方式写参数说明{" "}
+                    <span>基于 mockjs 和 json5,使用注释方式写参数说明{" "} 
                       <Tooltip title={<pre>{Json5Example}</pre>}>
                         <Icon
                           type="question-circle-o"
@@ -1100,7 +1132,7 @@ class InterfaceEditForm extends Component {
 
                   ，“全局编辑”或 “退出全屏” 请按{" "}
                   <span style={{ fontWeight: "500" }}>F9</span>                   
-                </div>
+                </div> 
                 <div
                   id="res_body_json"
                   style={{
@@ -1108,6 +1140,13 @@ class InterfaceEditForm extends Component {
                     display: this.state.jsonType === "tpl" ? "block" : "none"
                   }}
                 />
+                <div
+                  id="mock_json"
+                  style={{
+                    minHeight: "300px",
+                    display: this.state.jsonType === "mock" ? "block" : "none"
+                  }}
+                />                
                 <div
                   id="mock-preview"
                   style={{
