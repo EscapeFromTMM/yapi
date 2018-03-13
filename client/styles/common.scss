@@ -225,3 +225,7 @@ em {
     color: #2395f1;
   }
 }
+
+tr.ant-table-row > td:first-child {
+  white-space: nowrap;
+}

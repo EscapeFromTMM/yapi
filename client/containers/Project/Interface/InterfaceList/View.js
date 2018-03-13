@@ -11,9 +11,9 @@ import variable from '../../../../constants/variable';
 import constants from '../../../../constants/variable.js'
 import copy from 'copy-to-clipboard';
 import SchemaTable from '../../../../components/SchemaTable/SchemaTable.js'
+import beautify from 'beautify'
 
 const HTTP_METHOD = constants.HTTP_METHOD;
-
 
 @connect(state => {
   return {
@@ -96,10 +96,9 @@ class View extends Component {
 
     }
   }
-  res_body(res_body_type, res_body, res_body_is_json_schema) {
+  res_body(res_body_type, res_body) {
     if (res_body_type === 'json') {
       //  if(res_body_is_json_schema) {
-
       //     return <SchemaTable dataSource={res_body}/>
       //  } else {
       //   return <div className="colBody">
@@ -114,7 +113,70 @@ class View extends Component {
       </div>
     }
   }
+  isTable(res_body) {
+    let flag = false;
+    if(res_body) {
+      let json = JSON.parse(res_body);
+      if(json.hasOwnProperty("properties") && json.properties.data) {
+        let {data} = json.properties;
+        if(data.hasOwnProperty("properties") && data.properties.pageInfo && data.properties.list) {
+          flag = true;
+        }
+      }
+    }
+    return flag;
+  }
+  getJsonStr(res_json) {
+    let list = res_json.properties.data.properties.list.items.properties;
+    let arr = Object.keys(list).map(key => {        
+      return {
+        "title": list[key].description,
+        "data": key
+      }
+    })
+    return beautify(JSON.stringify(arr), {format: 'json'});
+  }
+  res_table(res_body_type, res_body) {
 
+    if (res_body_type === 'json' && res_body) {
+      let res_json = JSON.parse(res_body);         
+      if (this.isTable(res_body)) {
+        let jsonStr = this.getJsonStr(res_json);
+        return (
+          <div>
+            <pre>
+              {jsonStr}
+            </pre>
+          </div>
+        )
+      } else {
+        return (
+          null
+        )        
+      }        
+    } else {
+      return (
+        null
+      )
+    }
+  }
+  copyText(res_body) {
+    let res_json = JSON.parse(res_body);     
+    let text = this.getJsonStr(res_json);   
+    let textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      var successful = document.execCommand('copy');
+      var msg = successful ? 'successful' : 'unsuccessful';
+      message.success('复制成功')      
+      console.log('Copying text command was ' + msg);
+    } catch (err) {
+      console.log('Oops, unable to copy');
+    }
+    document.body.removeChild(textArea);
+  }
   req_body(req_body_type, req_body_other, req_body_is_json_schema) {
     if(req_body_other) {
       if(req_body_is_json_schema) {
@@ -350,11 +412,11 @@ class View extends Component {
       </h2>
       {req_dataSource.length ? <div className="colHeader">
         <h3 className="col-title">路径参数：</h3>
-        <Table bordered size="small" pagination={false} columns={req_params_columns} dataSource={req_dataSource} />
+        <Table bordered  pagination={false} columns={req_params_columns} dataSource={req_dataSource} />
       </div> : ""}
       {dataSource.length ? <div className="colHeader">
         <h3 className="col-title">Headers：</h3>
-        <Table bordered size="small" pagination={false} columns={columns} dataSource={dataSource} />
+        <Table bordered  pagination={false} columns={columns} dataSource={dataSource} />
       </div> : ""}
       {this.props.curData.req_query && this.props.curData.req_query.length ? <div className="colQuery">
         <h3 className="col-title">Query：</h3>
@@ -375,10 +437,17 @@ class View extends Component {
       </div>
 
       <h2 className="interface-title">返回数据</h2>
-      {this.res_body(this.props.curData.res_body_type, this.props.curData.res_body, this.props.curData.res_body_is_json_schema)}
+      {/* this.props.curData.res_body_is_json_schema */}
+      {this.res_body(this.props.curData.res_body_type, this.props.curData.res_body)}
         
       {this.props.curData.desc && <h2 className="interface-title">备注</h2> }
       {this.props.curData.desc && <div className="tui-editor-contents" style={{margin: '0px', padding:'0px 20px', float: 'none'}}  dangerouslySetInnerHTML={{ __html: this.props.curData.desc }}></div>}
+      {this.isTable(this.props.curData.res_body)? (<h2 className="interface-title">
+        <Tooltip title="复制数据">
+          <Icon type='copy' className="interface-delete-icon" onClick={(e) => { e.stopPropagation(); this.copyText(this.props.curData.res_body) }} />    
+        </Tooltip>tableData</h2>): null      
+      }
+      {this.res_table(this.props.curData.res_body_type, this.props.curData.res_body)}
     </div>;
 
     if (!this.props.curData.title) {
