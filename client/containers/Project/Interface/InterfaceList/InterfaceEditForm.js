@@ -1096,9 +1096,9 @@ class InterfaceEditForm extends Component {
                 })}              
                 <TabPane tab="schema" key="tpl" />
                 {!this.props.form.getFieldValue("res_body_is_json_schema") ?
-                <TabPane tab="mock" key="mock"/> : "" }                
-               {!this.props.form.getFieldValue("res_body_is_json_schema") ?
-                <TabPane tab="mock预览" key="preview" /> : "" }
+                  <TabPane tab="mock" key="mock"/> : "" }                
+                {!this.props.form.getFieldValue("res_body_is_json_schema") ?
+                  <TabPane tab="mock预览" key="preview" /> : "" }
               </Tabs>
               
               <div style={{marginTop: '10px'}}>
